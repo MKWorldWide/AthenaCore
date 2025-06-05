@@ -6,6 +6,11 @@
  * @module AthenaCore
  */
 
+import { LLMConfig } from '../lib/athenacore/modules/llm';
+import { MemoryConfig } from '../lib/athenacore/modules/memory';
+import { TradingConfig } from '../lib/athenacore/modules/trading';
+import { LilithConfig } from '../lib/athenacore/modules/lilith';
+
 /**
  * @interface KernelConfig
  * @description Configuration for the core kernel system
@@ -44,6 +49,8 @@ export interface MemoryConfig {
     maxSize: number;
     ttl: number;
   };
+  redisUrl?: string;
+  vectorStore?: "pinecone" | "weaviate" | "local";
 }
 
 /**
@@ -63,6 +70,8 @@ export interface LLMConfig {
   };
   /** Request timeout in milliseconds */
   timeout: number;
+  provider: "openai" | "mistral" | "custom";
+  temperature: number;
 }
 
 /**
@@ -83,6 +92,8 @@ export interface TradingConfig {
     riskLimit: number;
     allowedInstruments: string[];
   };
+  platform: "oanda" | "binance" | "paper";
+  accountId: string;
 }
 
 /**
@@ -91,13 +102,18 @@ export interface TradingConfig {
  */
 export interface AthenaConfig {
   /** Kernel configuration */
-  kernel: KernelConfig;
+  kernel: {
+    name: string;
+    sovereignty: boolean;
+    autoSelfHeal: boolean;
+  };
   /** Memory system configuration */
   memory: MemoryConfig;
   /** LLM integration configuration */
   llm: LLMConfig;
   /** Trading system configuration */
   trading: TradingConfig;
+  lilith: LilithConfig;
 }
 
 /**
@@ -106,13 +122,9 @@ export interface AthenaConfig {
  */
 export const DEFAULT_CONFIG: AthenaConfig = {
   kernel: {
-    maxConcurrentOps: 10,
-    debug: false,
-    heartbeatInterval: 1000,
-    resourceLimits: {
-      memory: 1024 * 1024 * 1024, // 1GB
-      cpu: 4,
-    },
+    name: "AthenaCore",
+    sovereignty: true,
+    autoSelfHeal: true,
   },
   memory: {
     maxCapacity: 1024 * 1024 * 1024, // 1GB
@@ -126,6 +138,8 @@ export const DEFAULT_CONFIG: AthenaConfig = {
       maxSize: 100 * 1024 * 1024, // 100MB
       ttl: 3600000, // 1 hour
     },
+    redisUrl: process.env.REDIS_URL,
+    vectorStore: "pinecone",
   },
   llm: {
     endpoint: "https://api.openai.com/v1",
@@ -136,6 +150,8 @@ export const DEFAULT_CONFIG: AthenaConfig = {
       parameters: {},
     },
     timeout: 30000,
+    provider: "openai",
+    temperature: 0.25,
   },
   trading: {
     endpoint: "https://api.trading.com/v1",
@@ -148,5 +164,24 @@ export const DEFAULT_CONFIG: AthenaConfig = {
       riskLimit: 0.02,
       allowedInstruments: ["BTC/USD", "ETH/USD"],
     },
+    platform: "oanda",
+    accountId: process.env.OANDA_ACCOUNT_ID || "",
   },
+  lilith: {
+    patternRecognition: {
+      enabled: true,
+      minConfidence: 0.7,
+      maxPatterns: 100
+    },
+    decisionMaking: {
+      enabled: true,
+      autonomy: 0.8,
+      maxDecisions: 50
+    },
+    learning: {
+      enabled: true,
+      adaptationRate: 0.1,
+      memorySize: 1000
+    }
+  }
 }; 
