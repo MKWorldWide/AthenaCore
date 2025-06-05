@@ -10,6 +10,7 @@ import { LLMConfig } from '../lib/athenacore/modules/llm';
 import { MemoryConfig } from '../lib/athenacore/modules/memory';
 import { TradingConfig } from '../lib/athenacore/modules/trading';
 import { LilithConfig } from '../lib/athenacore/modules/lilith';
+import { DreamscapeConfig } from '../lib/athenacore/modules/dreamscape';
 
 /**
  * @interface KernelConfig
@@ -114,6 +115,7 @@ export interface AthenaConfig {
   /** Trading system configuration */
   trading: TradingConfig;
   lilith: LilithConfig;
+  dreamscape: DreamscapeConfig;
 }
 
 /**
@@ -182,6 +184,23 @@ export const DEFAULT_CONFIG: AthenaConfig = {
       enabled: true,
       adaptationRate: 0.1,
       memorySize: 1000
+    }
+  },
+  dreamscape: {
+    consciousness: {
+      enabled: true,
+      mappingInterval: 1000,
+      minStability: 0.7
+    },
+    patternRecognition: {
+      enabled: true,
+      minClarity: 0.8,
+      maxPatterns: 100
+    },
+    integration: {
+      withLilith: true,
+      withAthena: true,
+      syncInterval: 5000
     }
   }
 }; 

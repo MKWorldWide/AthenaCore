@@ -9,6 +9,7 @@ import { AthenaCore } from './lib/athenacore';
 import { defaultAthenaConfig } from './config/athenacore';
 import { TaskMatrix } from './lib/athenacore/ops/taskmatrix';
 import { Lilith } from './lib/athenacore/modules/lilith';
+import { Dreamscape } from './lib/athenacore/modules/dreamscape';
 
 /**
  * @function main
@@ -23,6 +24,10 @@ async function main() {
     // Initialize Lilith
     const lilith = new Lilith(defaultAthenaConfig.lilith);
     await lilith.initialize();
+
+    // Initialize Dreamscape
+    const dreamscape = new Dreamscape(defaultAthenaConfig.dreamscape);
+    await dreamscape.initialize();
 
     // Initialize TaskMatrix
     const taskMatrix = new TaskMatrix();
@@ -89,6 +94,45 @@ async function main() {
         };
         const decision = await lilith.makeDecision(marketContext);
         console.log('Lilith Decision:', decision);
+      },
+      interval: 30000 // Every 30 seconds
+    });
+
+    taskMatrix.registerTask({
+      id: 'dreamscape-consciousness',
+      name: 'Consciousness Mapping',
+      description: 'Map consciousness state using Dreamscape',
+      handler: async () => {
+        const state = await dreamscape.mapConsciousness();
+        console.log('Consciousness State:', state);
+      },
+      interval: 10000 // Every 10 seconds
+    });
+
+    taskMatrix.registerTask({
+      id: 'dreamscape-pattern',
+      name: 'Dream Pattern Recognition',
+      description: 'Recognize dream patterns using Dreamscape',
+      handler: async () => {
+        const dreamData = {
+          symbols: ['light', 'water', 'mountain'],
+          emotions: ['peace', 'clarity'],
+          context: 'lucid'
+        };
+        const patterns = await dreamscape.recognizeDreamPattern(dreamData);
+        console.log('Dream Patterns:', patterns);
+      },
+      interval: 20000 // Every 20 seconds
+    });
+
+    taskMatrix.registerTask({
+      id: 'dreamscape-lilith-integration',
+      name: 'Dream-Lilith Integration',
+      description: 'Integrate dream patterns with Lilith',
+      handler: async () => {
+        const lilithPatterns = await lilith.getPatterns();
+        await dreamscape.integrateWithLilith(lilithPatterns);
+        console.log('Dream-Lilith Integration Complete');
       },
       interval: 30000 // Every 30 seconds
     });
