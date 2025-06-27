@@ -254,7 +254,9 @@ export class TaskMatrix extends EventEmitter {
     if (task) {
       task.controlOverride = {
         ...task.controlOverride,
-        ...override
+        ...override,
+        enabled: override.enabled ?? task.controlOverride?.enabled ?? true,
+        priority: override.priority ?? task.controlOverride?.priority ?? task.priority ?? 0
       };
       this.emit('task:control:updated', { taskId, override });
     }
