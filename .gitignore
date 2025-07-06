@@ -40,4 +40,7 @@ yarn-error.log*
 
 # Temporary files
 tmp/
-temp/ 
+temp/
+
+# AthenaMist-Blended integration (local only)
+AthenaMist-Blended/ 

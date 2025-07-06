@@ -1,15 +1,17 @@
 /**
  * @file AthenaCore Main Entry Point
- * @description Main entry point for AthenaCore
+ * @description Main application entry point for AthenaCore
  * @author Sunny & Mrs. K
  * @version 1.0.0
+ * @module AthenaCore
  */
 
-import { initializeAthenaCore } from './lib/athenacore/init';
-import { defaultAthenaConfig } from './config/athenacore';
-import { TaskMatrix } from './lib/athenacore/ops/taskmatrix';
-import { Lilith } from './lib/athenacore/modules/lilith';
-import { Dreamscape } from './lib/athenacore/modules/dreamscape';
+import 'module-alias/register';
+import { initializeAthenaCore } from '@/lib/athenacore/init';
+import { defaultAthenaConfig } from '@/config/athenacore';
+import { TaskMatrix } from '@/lib/athenacore/ops/taskmatrix';
+import { Lilith } from '@/lib/athenacore/modules/lilith';
+import { Dreamscape } from '@/lib/athenacore/modules/dreamscape';
 
 /**
  * @function main
