@@ -6,9 +6,6 @@
  * @module AthenaCore
  */
 
-import { LLMConfig } from '../lib/athenacore/modules/llm';
-import { MemoryConfig } from '../lib/athenacore/modules/memory';
-import { TradingConfig } from '../lib/athenacore/modules/trading';
 import { LilithConfig } from '../lib/athenacore/modules/lilith';
 import { DreamscapeConfig } from '../lib/athenacore/modules/dreamscape';
 
@@ -73,6 +70,12 @@ export interface LLMConfig {
   timeout: number;
   provider: "openai" | "mistral" | "custom";
   temperature: number;
+  /** Cache configuration */
+  cache?: {
+    enabled: boolean;
+    ttl: number;
+    maxSize: number;
+  };
 }
 
 /**
@@ -154,6 +157,11 @@ export const DEFAULT_CONFIG: AthenaConfig = {
     timeout: 30000,
     provider: "openai",
     temperature: 0.25,
+    cache: {
+      enabled: true,
+      ttl: 300000, // 5 minutes
+      maxSize: 1000
+    }
   },
   trading: {
     endpoint: "https://api.trading.com/v1",
@@ -173,34 +181,60 @@ export const DEFAULT_CONFIG: AthenaConfig = {
     patternRecognition: {
       enabled: true,
       minConfidence: 0.7,
-      maxPatterns: 100
+      maxPatterns: 100,
+      algorithms: ["market", "behavioral", "temporal"],
+      sensitivity: 0.8
     },
     decisionMaking: {
       enabled: true,
       autonomy: 0.8,
-      maxDecisions: 50
+      maxDecisions: 50,
+      riskTolerance: 0.3,
+      learningRate: 0.1
     },
     learning: {
       enabled: true,
       adaptationRate: 0.1,
-      memorySize: 1000
+      memorySize: 1000,
+      reinforcementLearning: true
+    },
+    performance: {
+      maxConcurrentAnalyses: 10,
+      timeout: 30000,
+      retryAttempts: 3
     }
   },
   dreamscape: {
     consciousness: {
       enabled: true,
       mappingInterval: 1000,
-      minStability: 0.7
+      minStability: 0.7,
+      depthLevels: 5,
+      sensitivity: 0.8
     },
     patternRecognition: {
       enabled: true,
       minClarity: 0.8,
-      maxPatterns: 100
+      maxPatterns: 100,
+      algorithms: ["symbolic", "emotional", "archetypal"],
+      archetypeMapping: true
     },
     integration: {
       withLilith: true,
       withAthena: true,
-      syncInterval: 5000
+      syncInterval: 5000,
+      crossPatternAnalysis: true
+    },
+    performance: {
+      maxConcurrentMappings: 5,
+      timeout: 30000,
+      cacheSize: 1000
     }
   }
-}; 
+};
+
+/**
+ * @constant defaultAthenaConfig
+ * @description Export the default configuration for backward compatibility
+ */
+export const defaultAthenaConfig = DEFAULT_CONFIG; 

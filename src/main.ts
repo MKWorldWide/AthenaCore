@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-import { AthenaCore } from './lib/athenacore';
+import { initializeAthenaCore } from './lib/athenacore/init';
 import { defaultAthenaConfig } from './config/athenacore';
 import { TaskMatrix } from './lib/athenacore/ops/taskmatrix';
 import { Lilith } from './lib/athenacore/modules/lilith';
@@ -18,8 +18,7 @@ import { Dreamscape } from './lib/athenacore/modules/dreamscape';
 async function main() {
   try {
     // Initialize AthenaCore
-    const athena = new AthenaCore(defaultAthenaConfig);
-    await athena.initialize();
+    const athena = await initializeAthenaCore(defaultAthenaConfig);
 
     // Initialize Lilith
     const lilith = new Lilith(defaultAthenaConfig.lilith);
@@ -40,7 +39,9 @@ async function main() {
       handler: async () => {
         const response = await athena.llm.generate({
           prompt: 'Summarize the latest market news',
-          maxTokens: 100
+          parameters: {
+            maxTokens: 100
+          }
         });
         console.log('Market Summary:', response.content);
       },
@@ -53,8 +54,8 @@ async function main() {
       description: 'Update memory with last heartbeat',
       handler: async () => {
         const lastHeartbeat = taskMatrix.getLastHeartbeat();
-        await athena.memory.store('heartbeat', lastHeartbeat);
-        console.log('Memory Updated:', lastHeartbeat);
+        console.log('Memory Update: Memory module not implemented yet');
+        console.log('Last Heartbeat:', lastHeartbeat);
       },
       interval: 5000 // Every 5 seconds
     });
@@ -64,8 +65,7 @@ async function main() {
       name: 'Trading Balance Check',
       description: 'Check and log trading balance',
       handler: async () => {
-        const balance = await athena.trading.getBalance();
-        console.log('Trading Balance:', balance);
+        console.log('Trading Balance: Trading module not implemented yet');
       },
       interval: 30000 // Every 30 seconds
     });
@@ -75,7 +75,12 @@ async function main() {
       name: 'Pattern Recognition',
       description: 'Recognize market patterns using Lilith',
       handler: async () => {
-        const marketData = await athena.trading.getMarketData('BTC/USD');
+        const marketData = {
+          symbol: 'BTC/USD',
+          price: 50000,
+          volume: 1000,
+          timestamp: Date.now()
+        };
         const patterns = await lilith.recognizePattern(marketData);
         console.log('Recognized Patterns:', patterns);
       },
@@ -89,7 +94,12 @@ async function main() {
       handler: async () => {
         const marketContext = {
           market: 'BTC/USD',
-          data: await athena.trading.getMarketData('BTC/USD'),
+          data: {
+            symbol: 'BTC/USD',
+            price: 50000,
+            volume: 1000,
+            timestamp: Date.now()
+          },
           patterns: await lilith.getPatterns()
         };
         const decision = await lilith.makeDecision(marketContext);
@@ -117,7 +127,12 @@ async function main() {
         const dreamData = {
           symbols: ['light', 'water', 'mountain'],
           emotions: ['peace', 'clarity'],
-          context: 'lucid'
+          context: {
+            environment: 'lucid',
+            timeOfDay: 'night',
+            emotionalState: 'peaceful'
+          },
+          timestamp: Date.now()
         };
         const patterns = await dreamscape.recognizeDreamPattern(dreamData);
         console.log('Dream Patterns:', patterns);
@@ -144,7 +159,9 @@ async function main() {
       handler: async () => {
         const response = await athena.llm.generate({
           prompt: 'Analyze current market conditions and decide whether to buy or sell BTC/USD',
-          maxTokens: 100
+          parameters: {
+            maxTokens: 100
+          }
         });
         console.log('LLM Trading Decision:', response.content);
       },
@@ -152,13 +169,13 @@ async function main() {
     });
 
     // Start TaskMatrix
-    await taskMatrix.start();
+    taskMatrix.start();
     console.log('AthenaCore is operational! 🚀');
 
     // Handle graceful shutdown
     process.on('SIGINT', async () => {
       console.log('\nShutting down AthenaCore...');
-      await taskMatrix.stop();
+      taskMatrix.stop();
       process.exit(0);
     });
 

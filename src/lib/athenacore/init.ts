@@ -6,12 +6,11 @@
  * @module AthenaCore
  */
 
-import { createCoreKernel } from "@/lib/athenacore/kernel";
-import { initializeMemoryBank } from "@/lib/athenacore/memory";
-import { connectToTradingRelay } from "@/lib/athenacore/modules/trading";
 import { initializeLLMBridge } from "@/lib/athenacore/modules/llm";
 import { initializeVerseBridge } from "@/lib/athenacore/modules/verse";
 import { bootstrapTaskMatrix } from "@/lib/athenacore/ops/taskmatrix";
+import { initializeLilith } from "@/lib/athenacore/modules/lilith";
+import { initializeDreamscape } from "@/lib/athenacore/modules/dreamscape";
 import { AthenaConfig } from "@/config/athenacore";
 
 /**
@@ -19,12 +18,11 @@ import { AthenaConfig } from "@/config/athenacore";
  * @description Represents the fully initialized AthenaCore system with all its components
  */
 export interface AthenaCoreInstance {
-  kernel: ReturnType<typeof createCoreKernel>;
-  memory: ReturnType<typeof initializeMemoryBank>;
-  llm: ReturnType<typeof initializeLLMBridge>;
-  trading: ReturnType<typeof connectToTradingRelay>;
-  verse: ReturnType<typeof initializeVerseBridge>;
-  ops: ReturnType<typeof bootstrapTaskMatrix>;
+  llm: Awaited<ReturnType<typeof initializeLLMBridge>>;
+  verse: Awaited<ReturnType<typeof initializeVerseBridge>>;
+  lilith: Awaited<ReturnType<typeof initializeLilith>>;
+  dreamscape: Awaited<ReturnType<typeof initializeDreamscape>>;
+  ops: Awaited<ReturnType<typeof bootstrapTaskMatrix>>;
 }
 
 /**
@@ -36,18 +34,17 @@ export interface AthenaCoreInstance {
 export async function initializeAthenaCore(config: AthenaConfig): Promise<AthenaCoreInstance> {
   try {
     // Initialize core components
-    const kernel = await createCoreKernel(config.kernel);
-    const memory = await initializeMemoryBank(config.memory);
     const llm = await initializeLLMBridge(config.llm);
-    const trading = await connectToTradingRelay(config.trading);
     const verse = await initializeVerseBridge();
+    const lilith = await initializeLilith(config.lilith);
+    const dreamscape = await initializeDreamscape(config.dreamscape);
     
-    // Initialize operations matrix
+    // Initialize operations matrix with required context
     const ops = await bootstrapTaskMatrix({
-      kernel,
-      memory,
+      kernel: {}, // Placeholder for kernel module
+      memory: {}, // Placeholder for memory module
       llm,
-      trading,
+      trading: {}, // Placeholder for trading module
       verse
     });
 
@@ -55,15 +52,15 @@ export async function initializeAthenaCore(config: AthenaConfig): Promise<Athena
     await registerDefaultTasks(ops);
 
     return {
-      kernel,
-      memory,
       llm,
-      trading,
       verse,
+      lilith,
+      dreamscape,
       ops
     };
   } catch (error) {
-    throw new Error(`Failed to initialize AthenaCore: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to initialize AthenaCore: ${errorMessage}`);
   }
 }
 
@@ -73,14 +70,16 @@ export async function initializeAthenaCore(config: AthenaConfig): Promise<Athena
  * @description Register default tasks in the operations matrix
  * @param ops - TaskMatrix instance
  */
-async function registerDefaultTasks(ops: ReturnType<typeof bootstrapTaskMatrix>): Promise<void> {
+async function registerDefaultTasks(ops: Awaited<ReturnType<typeof bootstrapTaskMatrix>>): Promise<void> {
   // Register Verse-related tasks
-  ops.registerTask({
+  await ops.registerTask({
     id: 'verse-code-generation',
-    run: async (ctx) => {
+    run: async (ctx: any) => {
       const response = await ctx.llm.generate({
         prompt: 'Generate Verse code for a simple game mechanic',
-        maxTokens: 500
+        parameters: {
+          maxTokens: 500
+        }
       });
       const verseCode = await ctx.verse.generateCode({
         intent: response.content,
@@ -93,26 +92,20 @@ async function registerDefaultTasks(ops: ReturnType<typeof bootstrapTaskMatrix>)
     interval: 300000 // Every 5 minutes
   });
 
-  ops.registerTask({
+  await ops.registerTask({
     id: 'verse-code-analysis',
-    run: async (ctx) => {
-      const code = await ctx.memory.get('lastGeneratedVerseCode');
-      if (code) {
-        const analysis = await ctx.verse.analyzeCode(code);
-        console.log('Verse Code Analysis:', analysis);
-      }
+    run: async (ctx: any) => {
+      // This would need memory module to be implemented
+      console.log('Verse Code Analysis: Memory module not implemented yet');
     },
     interval: 600000 // Every 10 minutes
   });
 
-  ops.registerTask({
+  await ops.registerTask({
     id: 'verse-code-optimization',
-    run: async (ctx) => {
-      const code = await ctx.memory.get('lastAnalyzedVerseCode');
-      if (code) {
-        const optimized = await ctx.verse.optimizeCode(code);
-        console.log('Optimized Verse Code:', optimized);
-      }
+    run: async (ctx: any) => {
+      // This would need memory module to be implemented
+      console.log('Verse Code Optimization: Memory module not implemented yet');
     },
     interval: 900000 // Every 15 minutes
   });
