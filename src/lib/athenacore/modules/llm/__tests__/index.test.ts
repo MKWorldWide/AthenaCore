@@ -1,5 +1,5 @@
 import { LLMBridge, LLMRequest } from '../index';
-import { LLMConfig } from '@/config/athenacore';
+import { LLMConfig } from '../../../../../config/athenacore';
 
 describe('LLMBridge', () => {
   const mockConfig: LLMConfig = {
@@ -10,7 +10,9 @@ describe('LLMBridge', () => {
       version: '1.0.0',
       parameters: {}
     },
-    timeout: 30000
+    timeout: 30000,
+    provider: 'openai',
+    temperature: 0.7
   };
 
   let bridge: LLMBridge;

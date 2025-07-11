@@ -1,5 +1,5 @@
 import { CustomModel } from '../model';
-import { LLMConfig } from '@/config/athenacore';
+import { LLMConfig } from '../../../../../config/athenacore';
 import { LLMRequest } from '../index';
 
 describe('CustomModel', () => {
@@ -11,7 +11,9 @@ describe('CustomModel', () => {
       version: '1.0.0',
       parameters: {}
     },
-    timeout: 30000
+    timeout: 30000,
+    provider: 'openai',
+    temperature: 0.7
   };
 
   let model: CustomModel;

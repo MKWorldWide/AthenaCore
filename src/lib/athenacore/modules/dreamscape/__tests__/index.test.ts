@@ -14,17 +14,27 @@ describe('Dreamscape Module', () => {
     consciousness: {
       enabled: true,
       mappingInterval: 1000,
-      minStability: 0.7
+      minStability: 0.7,
+      depthLevels: 5,
+      sensitivity: 0.8
     },
     patternRecognition: {
       enabled: true,
       minClarity: 0.8,
-      maxPatterns: 100
+      maxPatterns: 100,
+      algorithms: ['symbolic', 'emotional', 'archetypal'],
+      archetypeMapping: true
     },
     integration: {
       withLilith: true,
       withAthena: true,
-      syncInterval: 5000
+      syncInterval: 5000,
+      crossPatternAnalysis: true
+    },
+    performance: {
+      maxConcurrentMappings: 5,
+      timeout: 30000,
+      cacheSize: 1000
     }
   };
 
@@ -76,7 +86,12 @@ describe('Dreamscape Module', () => {
       const dreamData = {
         symbols: ['light', 'water', 'mountain'],
         emotions: ['peace', 'clarity'],
-        context: 'lucid'
+        context: {
+          environment: 'lucid',
+          timeOfDay: 'night',
+          emotionalState: 'peaceful'
+        },
+        timestamp: Date.now()
       };
       
       const patterns = await dreamscape.recognizeDreamPattern(dreamData);
@@ -94,7 +109,12 @@ describe('Dreamscape Module', () => {
       const dreamData = {
         symbols: ['fire', 'earth', 'wind'],
         emotions: ['power', 'strength'],
-        context: 'archetype'
+        context: {
+          environment: 'archetype',
+          timeOfDay: 'dawn',
+          emotionalState: 'powerful'
+        },
+        timestamp: Date.now()
       };
       
       dreamscape.on('pattern:recognized', (pattern: DreamPattern) => {
@@ -118,7 +138,9 @@ describe('Dreamscape Module', () => {
         metadata: {
           source: 'lilith',
           context: 'market_analysis',
-          tags: ['crypto']
+          tags: ['crypto'],
+          complexity: 0.8,
+          reliability: 0.9
         }
       }];
 
@@ -135,7 +157,9 @@ describe('Dreamscape Module', () => {
         metadata: {
           source: 'lilith',
           context: 'behavior_analysis',
-          tags: ['pattern']
+          tags: ['pattern'],
+          complexity: 0.7,
+          reliability: 0.85
         }
       }];
 
@@ -154,7 +178,9 @@ describe('Dreamscape Module', () => {
         consciousness: {
           enabled: true,
           mappingInterval: 2000,
-          minStability: 0.8
+          minStability: 0.8,
+          depthLevels: 5,
+          sensitivity: 0.8
         }
       };
 
@@ -168,7 +194,9 @@ describe('Dreamscape Module', () => {
         patternRecognition: {
           enabled: true,
           minClarity: 0.9,
-          maxPatterns: 200
+          maxPatterns: 200,
+          algorithms: ['symbolic', 'emotional', 'archetypal'],
+          archetypeMapping: true
         }
       };
 
@@ -193,7 +221,7 @@ describe('Dreamscape Module', () => {
         done();
       });
 
-      dreamscape.recognizeDreamPattern(undefined);
+      dreamscape.recognizeDreamPattern(null as any);
     });
   });
 }); 

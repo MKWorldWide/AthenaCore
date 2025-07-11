@@ -13,17 +13,27 @@ describe('Lilith Module', () => {
     patternRecognition: {
       enabled: true,
       minConfidence: 0.7,
-      maxPatterns: 100
+      maxPatterns: 100,
+      algorithms: ['market', 'behavioral', 'temporal'],
+      sensitivity: 0.8
     },
     decisionMaking: {
       enabled: true,
       autonomy: 0.8,
-      maxDecisions: 50
+      maxDecisions: 50,
+      riskTolerance: 0.3,
+      learningRate: 0.1
     },
     learning: {
       enabled: true,
       adaptationRate: 0.1,
-      memorySize: 1000
+      memorySize: 1000,
+      reinforcementLearning: true
+    },
+    performance: {
+      maxConcurrentAnalyses: 10,
+      timeout: 30000,
+      retryAttempts: 3
     }
   };
 
@@ -124,7 +134,9 @@ describe('Lilith Module', () => {
         patternRecognition: {
           enabled: true,
           minConfidence: 0.8,
-          maxPatterns: 200
+          maxPatterns: 200,
+          algorithms: ['market', 'behavioral', 'temporal'],
+          sensitivity: 0.8
         }
       };
 
@@ -138,7 +150,9 @@ describe('Lilith Module', () => {
         decisionMaking: {
           enabled: true,
           autonomy: 0.9,
-          maxDecisions: 100
+          maxDecisions: 100,
+          riskTolerance: 0.3,
+          learningRate: 0.1
         }
       };
 

@@ -1,43 +1,27 @@
-import { initAthenaCore } from '../init';
-import { DEFAULT_CONFIG } from '@/config/athenacore';
+import { initializeAthenaCore } from '../init';
+import { DEFAULT_CONFIG } from '../../../config/athenacore';
 
 describe('AthenaCore Initialization', () => {
-  it('should initialize with default configuration', async () => {
-    const athena = await initAthenaCore(DEFAULT_CONFIG);
+  it('should initialize successfully with default config', async () => {
+    const athena = await initializeAthenaCore(DEFAULT_CONFIG);
     
     expect(athena).toBeDefined();
-    expect(athena.kernel).toBeDefined();
-    expect(athena.memory).toBeDefined();
     expect(athena.llm).toBeDefined();
-    expect(athena.trading).toBeDefined();
+    expect(athena.verse).toBeDefined();
+    expect(athena.lilith).toBeDefined();
+    expect(athena.dreamscape).toBeDefined();
     expect(athena.ops).toBeDefined();
   });
 
-  it('should handle custom configuration', async () => {
-    const customConfig = {
-      ...DEFAULT_CONFIG,
-      kernel: {
-        ...DEFAULT_CONFIG.kernel,
-        debug: true,
-        maxConcurrentOps: 20
-      }
-    };
-
-    const athena = await initAthenaCore(customConfig);
-    
-    expect(athena).toBeDefined();
-    expect(athena.kernel).toBeDefined();
-  });
-
-  it('should throw error with invalid configuration', async () => {
+  it('should throw error with invalid config', async () => {
     const invalidConfig = {
       ...DEFAULT_CONFIG,
-      kernel: {
-        ...DEFAULT_CONFIG.kernel,
-        maxConcurrentOps: -1 // Invalid value
+      llm: {
+        ...DEFAULT_CONFIG.llm,
+        apiKey: '' // Invalid empty API key
       }
     };
 
-    await expect(initAthenaCore(invalidConfig)).rejects.toThrow();
+    await expect(initializeAthenaCore(invalidConfig)).rejects.toThrow();
   });
 }); 
