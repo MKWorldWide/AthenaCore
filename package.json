@@ -28,16 +28,18 @@
   "author": "Sunny & Mrs. K",
   "license": "MIT",
   "dependencies": {
+    "@types/uuid": "^9.0.8",
     "axios": "^1.10.0",
     "dotenv": "^17.2.0",
     "module-alias": "^2.2.3",
     "openai": "^5.9.0",
+    "uuid": "^9.0.1",
     "winston": "^3.17.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.0.13",
+    "@types/node": "^24.1.0",
     "@typescript-eslint/eslint-plugin": "^8.36.0",
     "@typescript-eslint/parser": "^8.36.0",
     "eslint": "^9.30.1",
