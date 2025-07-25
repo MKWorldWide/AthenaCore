@@ -38,6 +38,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.152",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.1.0",
     "@typescript-eslint/eslint-plugin": "^8.36.0",
@@ -47,6 +48,10 @@
     "eslint-plugin-prettier": "^5.5.1",
     "jest": "^30.0.4",
     "prettier": "^3.6.2",
+    "serverless": "^4.17.2",
+    "serverless-dotenv-plugin": "^6.0.0",
+    "serverless-offline": "^14.4.0",
+    "serverless-plugin-typescript": "^2.1.5",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"

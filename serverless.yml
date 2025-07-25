@@ -1,0 +1,65 @@
+service: athenacore
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  environment:
+    NODE_ENV: ${self:provider.stage}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - 'lambda:InvokeFunction'
+            - 's3:*'
+            - 'dynamodb:*'
+            - 'sqs:*'
+            - 'sns:*'
+          Resource: '*'
+
+functions:
+  api:
+    handler: dist/handlers/api.handler
+    events:
+      - http:
+          path: /
+          method: ANY
+          cors: true
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: true
+
+  processQuantumTask:
+    handler: dist/handlers/processQuantumTask.handler
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt: [QuantumTaskQueue, Arn]
+
+resources:
+  Resources:
+    QuantumTaskQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-quantum-tasks-${self:provider.stage}
+        VisibilityTimeout: 900
+        MessageRetentionPeriod: 1209600
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+  - serverless-dotenv-plugin
+
+custom:
+  serverless-offline:
+    httpPort: 4000
+    lambdaPort: 4002
+  dotenv:
+    basePath: ./
+    path: .env.${self:provider.stage}
+    include: false
