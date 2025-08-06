@@ -28,11 +28,15 @@
   "author": "Sunny & Mrs. K",
   "license": "MIT",
   "dependencies": {
+    "@types/express": "^4.17.21",
     "@types/uuid": "^9.0.8",
     "axios": "^1.10.0",
+    "discord-interactions": "^3.7.0",
     "dotenv": "^17.2.0",
+    "express": "^4.18.2",
     "module-alias": "^2.2.3",
     "openai": "^5.9.0",
+    "tweetnacl": "^1.0.3",
     "uuid": "^9.0.1",
     "winston": "^3.17.0",
     "zod": "^3.25.76"

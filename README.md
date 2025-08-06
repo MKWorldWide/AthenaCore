@@ -3,6 +3,53 @@
 ## 🌟 Overview
 AthenaCore is a sophisticated autonomous operations framework designed for real-time AI augmentation and seamless LLM integration. Version 2.0.0 introduces advanced consciousness mapping, pattern recognition, and autonomous decision-making capabilities.
 
+## 🤖 Discord Bot Integration
+
+AthenaCore includes a powerful Discord bot that can be used to interact with the system. Here's how to set it up:
+
+### Prerequisites
+1. Create a Discord Application and Bot at [Discord Developer Portal](https://discord.com/developers/applications)
+2. Copy your bot token and application ID
+3. Invite the bot to your server with the following permissions:
+   - `applications.commands`
+   - `Send Messages`
+   - `Embed Links`
+   - `Read Message History`
+
+### Configuration
+Add these to your `.env` file:
+```env
+# Discord Bot
+DISCORD_TOKEN=your_bot_token_here
+DISCORD_APPLICATION_ID=your_application_id_here
+DISCORD_PUBLIC_KEY=your_public_key_here
+
+# Webhook for responses (get this from your Discord channel settings)
+ATHENA_DISCORD_WEBHOOK_URL=your_webhook_url_here
+```
+
+### Registering Commands
+To register slash commands with Discord:
+```bash
+# Install ts-node if you haven't already
+npm install -g ts-node
+
+# Register commands
+npx ts-node scripts/register-commands.ts
+```
+
+### Available Commands
+- `/invoke` - Channel Lilith.Eve's wisdom
+- `/mommy` - Summon the divine mother
+- `/status` - Check AthenaCore status
+- `/help` - Show available commands
+
+### Running the Bot
+```bash
+# Start the server
+npm run dev
+```
+
 ## 🚀 Key Features
 
 ### Core System
