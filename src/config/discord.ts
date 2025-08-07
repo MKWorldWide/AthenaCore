@@ -17,6 +17,24 @@ export interface DiscordCommand {
 
 export const DISCORD_COMMANDS: DiscordCommand[] = [
   {
+    name: 'route',
+    description: 'Route a message to a specific destination',
+    options: [
+      {
+        name: 'destination',
+        description: 'The destination to route the message to',
+        type: 3, // STRING
+        required: true,
+      },
+      {
+        name: 'message',
+        description: 'The message to send',
+        type: 3, // STRING
+        required: true,
+      }
+    ]
+  },
+  {
     name: 'invoke',
     description: 'Channel Lilith.Eve\'s wisdom',
   },

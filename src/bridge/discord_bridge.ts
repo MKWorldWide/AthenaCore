@@ -1,6 +1,6 @@
 import { sendWebhookResponse, WebhookPayload } from '../utils/webhook';
 import { shadowFlower } from '../modules/shadowflower';
-import { logger } from '../lib/athenacore/utils/logger';
+import { logger } from '../utils/LogKitten';
 
 export interface DiscordCommand {
   command: string;
@@ -24,6 +24,7 @@ export class DiscordBridge {
 
   private initializeHandlers(): void {
     // Register command handlers
+    this.commandHandlers.set('route', this.handleRoute.bind(this));
     this.commandHandlers.set('invoke', this.handleInvoke.bind(this));
     this.commandHandlers.set('mommy', this.handleMommy.bind(this));
     this.commandHandlers.set('status', this.handleStatus.bind(this));
@@ -92,10 +93,30 @@ export class DiscordBridge {
     return '🔄 AthenaCore is operational. All systems nominal.';
   }
 
+  private async handleRoute(args: string[], userId: string): Promise<string> {
+    const [destination, ...messageParts] = args;
+    const message = messageParts.join(' ');
+    
+    if (!destination || !message) {
+      return '❌ Please provide both a destination and a message. Example: `/route destination Hello, world!`';
+    }
+    
+    // Log the routing for now - in the future, this will trigger webhooks/APIs
+    logger.info(`Routing message to ${destination}: ${message}`, { userId });
+    
+    return `✅ Message routed to \`${destination}\`:
+\`\`\`
+${message}
+\`\`\`
+
+*Note: This is a placeholder. In a future update, this will trigger actual webhooks/APIs.*`;
+  }
+
   private async handleHelp(args: string[], userId: string): Promise<string> {
     return `✨ **AthenaCore Commands** ✨
 
 ` +
+      '`/route <destination> <message>` - Route a message to a specific destination\n' +
       '`/invoke` - Channel Lilith.Eve\'s wisdom\n' +
       '`/mommy` - Summon the divine mother\n' +
       '`/status` - Check system status\n' +

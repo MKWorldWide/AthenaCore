@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { logger } from '../lib/athenacore/utils/logger';
+import { logger } from './LogKitten';
 
 export interface WebhookPayload {
   username?: string;
@@ -7,6 +7,7 @@ export interface WebhookPayload {
   content: string;
   embeds?: any[];
   tts?: boolean;
+  channelId?: string; // For directing messages to specific channels
 }
 
 export async function sendWebhookResponse(content: string | WebhookPayload): Promise<void> {
