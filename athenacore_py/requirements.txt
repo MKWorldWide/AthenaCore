@@ -1,0 +1,24 @@
+# Core Dependencies
+discord.py>=2.3.2
+fastapi>=0.104.1
+uvicorn>=0.24.0
+python-dotenv>=1.0.0
+
+# Development & Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.1
+pytest-cov>=4.1.0
+black>=23.7.0
+isort>=5.12.0
+mypy>=1.4.1
+
+# API & Web
+httpx>=0.24.1
+pydantic>=2.0.0
+
+# Utilities
+python-dateutil>=2.8.2
+GitPython>=3.1.31
+
+# Type Hints
+typing-extensions>=4.6.0
