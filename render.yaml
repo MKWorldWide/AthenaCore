@@ -1,0 +1,41 @@
+# Render configuration for AthenaCore
+
+services:
+  - type: web
+    name: athenacore-bot
+    env: node
+    region: oregon # or choose a region closer to your users
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DISCORD_TOKEN
+        fromService:
+          type: secret
+          name: discord-token
+      - key: DISCORD_APPLICATION_ID
+        fromService:
+          type: secret
+          name: discord-app-id
+      - key: DISCORD_PUBLIC_KEY
+        fromService:
+          type: secret
+          name: discord-public-key
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+    healthCheckPath: /health
+    plan: free # or 'starter', 'standard', 'plus' for paid plans
+    autoDeploy: true
+    numInstances: 1
+    
+    # Optional: Add a buildpack if needed
+    # buildpacks:
+    #   - nodejs
+
+# Uncomment and configure if you need a database
+# databases:
+#   - name: athenacore-db
+#     databaseName: athenacore
+#     user: athena
+#     plan: free # or 'hobby-dev' for paid plans
