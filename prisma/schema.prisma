@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String   @default("") // Hashed password
+  roles     String[] @default(["user"])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
+
+  @@map("users")
+}
+
+model Intent {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  match        String   // Regex pattern or exact match
+  targetService String
+  priority     Int      @default(0)
+  isActive     Boolean  @default(true)
+  metadata     Json?    // Additional config
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([name, targetService])
+  @@map("intents")
+}
+
+model Event {
+  id        String   @id @default(uuid())
+  type      String
+  actorId   String?
+  actorType String?  // 'user', 'service', 'system'
+  targetId  String?
+  targetType String? // Entity type this event relates to
+  data      Json?    // Event payload
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([type])
+  @@index([actorId, actorType])
+  @@index([targetId, targetType])
+  @@index([createdAt])
+  @@map("events")
+}
+
+model Webhook {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  url         String
+  secret      String   @default("") // For HMAC signing
+  events      String[] // Event types to listen for
+  isActive    Boolean  @default(true)
+  lastStatus  Int?     // Last HTTP status code
+  lastFiredAt DateTime?
+  retryCount  Int      @default(0)
+  metadata    Json?    // Additional config
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([url])
+  @@map("webhooks")
+}
+
+model WebhookDelivery {
+  id         String   @id @default(uuid())
+  webhookId  String
+  eventId    String
+  status     Int
+  statusText String?
+  request    Json     // Request payload
+  response   Json?    // Response data
+  startedAt  DateTime @default(now())
+  finishedAt DateTime?
+  duration   Int?     // in ms
+  error      String?
+
+  @@index([webhookId])
+  @@index([eventId])
+  @@index([startedAt])
+  @@map("webhook_deliveries")
+}
+
+model Secret {
+  id           String   @id @default(uuid())
+  key          String
+  value        String   @default("") // Encrypted value
+  checksum     String   // For integrity verification
+  ownerService String   // Service that owns this secret
+  description  String?
+  tags         String[] @default([])
+  isActive     Boolean  @default(true)
+  lastUsedAt   DateTime?
+  expiresAt    DateTime?
+  metadata     Json?    // Additional metadata
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([key, ownerService])
+  @@index([ownerService])
+  @@index([tags])
+  @@map("secrets")
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  baseUrl     String?
+  apiKey      String   @default("") // Hashed API key
+  isActive    Boolean  @default(true)
+  lastSeen    DateTime?
+  metadata    Json?    // Additional service metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("services")
+}
+
+model Job {
+  id        String   @id @default(uuid())
+  type      String
+  status    String   @default("pending") // pending, processing, completed, failed
+  payload   Json?    // Input data
+  result    Json?    // Output data
+  error     String?
+  priority  Int      @default(0)
+  attempts  Int      @default(0)
+  maxAttempts Int    @default(3)
+  runAt     DateTime @default(now())
+  startedAt DateTime?
+  finishedAt DateTime?
+  parentId  String?  // For job dependencies
+  createdBy String?  // User/Service ID
+  metadata  Json?    // Additional metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([status])
+  @@index([runAt])
+  @@index([parentId])
+  @@map("jobs")
+}

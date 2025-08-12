@@ -1,56 +1,150 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import { readFileSync } from 'fs';
 
 // Load environment variables from .env file
 dotenv.config({
   path: path.resolve(process.cwd(), `.env.${process.env.NODE_ENV || 'dev'}`),
 });
 
-interface Config {
-  // Server configuration
-  NODE_ENV: 'development' | 'production' | 'test';
-  PORT: number;
-  
-  // AWS configuration
-  AWS_REGION: string;
-  AWS_ACCESS_KEY_ID?: string;
-  AWS_SECRET_ACCESS_KEY?: string;
-  AWS_SESSION_TOKEN?: string;
-  
-  // Quantum service configuration
-  QUANTUM_SERVICE_ENDPOINT?: string;
-  QUANTUM_SERVICE_API_KEY?: string;
-  
-  // Logging
-  LOG_LEVEL: 'error' | 'warn' | 'info' | 'http' | 'verbose' | 'debug' | 'silly';
+// Read package.json for version info
+const pkg = JSON.parse(readFileSync(path.join(process.cwd(), 'package.json'), 'utf-8'));
+
+export interface OTELConfig {
+  enabled: boolean;
+  serviceName: string;
+  endpoint: string;
+  logLevel: 'none' | 'error' | 'warn' | 'info' | 'debug';
 }
 
-// Default configuration
-const defaultConfig: Partial<Config> = {
-  NODE_ENV: 'development',
-  PORT: 3000,
-  LOG_LEVEL: 'info',
-};
+export interface DatabaseConfig {
+  url: string;
+  maxConnections: number;
+  ssl: boolean;
+}
+
+export interface RedisConfig {
+  url: string;
+  ttl: number;
+  maxRetries: number;
+  connectTimeout: number;
+  commandTimeout: number;
+}
+
+export interface AuthConfig {
+  jwtSecret: string;
+  jwtExpiresIn: string;
+  serviceKey: string;
+  serviceId: string;
+}
+
+export interface ServerConfig {
+  nodeEnv: 'development' | 'production' | 'test';
+  port: number;
+  host: string;
+  baseUrl: string;
+  corsOrigins: string[];
+  requestTimeout: number;
+  rateLimit: {
+    windowMs: number;
+    max: number;
+  };
+  buildHash: string;
+  version: string;
+}
+
+export interface Config {
+  // Core
+  nodeEnv: 'development' | 'production' | 'test';
+  isDev: boolean;
+  isProd: boolean;
+  isTest: boolean;
+  
+  // Server
+  server: ServerConfig;
+  
+  // Database
+  db: DatabaseConfig;
+  
+  // Redis
+  redis: RedisConfig;
+  
+  // Auth
+  auth: AuthConfig;
+  
+  // OpenTelemetry
+  otel: OTELConfig;
+  
+  // Package info
+  pkg: {
+    name: string;
+    version: string;
+    description: string;
+  };
+}
 
 // Parse environment variables with defaults
 const config: Config = {
-  NODE_ENV: (process.env.NODE_ENV as Config['NODE_ENV']) || 'development',
-  PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
-  AWS_REGION: process.env.AWS_REGION || 'us-east-1',
-  AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
-  AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
-  AWS_SESSION_TOKEN: process.env.AWS_SESSION_TOKEN,
-  QUANTUM_SERVICE_ENDPOINT: process.env.QUANTUM_SERVICE_ENDPOINT,
-  QUANTUM_SERVICE_API_KEY: process.env.QUANTUM_SERVICE_API_KEY,
-  LOG_LEVEL: (process.env.LOG_LEVEL as Config['LOG_LEVEL']) || 'info',
+  // Core
+  nodeEnv: (process.env.NODE_ENV as Config['nodeEnv']) || 'development',
+  isDev: process.env.NODE_ENV !== 'production',
+  isProd: process.env.NODE_ENV === 'production',
+  isTest: process.env.NODE_ENV === 'test',
+  
+  // Server
+  server: {
+    nodeEnv: (process.env.NODE_ENV as Config['nodeEnv']) || 'development',
+    port: process.env.PORT ? parseInt(process.env.PORT, 10) : 4001,
+    host: process.env.HOST || '0.0.0.0',
+    baseUrl: process.env.BASE_URL || 'http://localhost:4001',
+    corsOrigins: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [],
+    requestTimeout: process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT, 10) : 30000,
+    rateLimit: {
+      windowMs: process.env.RATE_LIMIT_WINDOW_MS ? parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) : 15 * 60 * 1000, // 15 minutes
+      max: process.env.RATE_LIMIT_MAX ? parseInt(process.env.RATE_LIMIT_MAX, 10) : 100,
+    },
+    buildHash: process.env.BUILD_HASH || 'dev',
+    version: pkg.version,
+  },
+  
+  // Database
+  db: {
+    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/athena',
+    maxConnections: process.env.DB_MAX_CONNECTIONS ? parseInt(process.env.DB_MAX_CONNECTIONS, 10) : 10,
+    ssl: process.env.DB_SSL === 'true',
+  },
+  
+  // Redis
+  redis: {
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    ttl: process.env.REDIS_TTL ? parseInt(process.env.REDIS_TTL, 10) : 86400, // 1 day
+    maxRetries: process.env.REDIS_MAX_RETRIES ? parseInt(process.env.REDIS_MAX_RETRIES, 10) : 3,
+    connectTimeout: process.env.REDIS_CONNECT_TIMEOUT ? parseInt(process.env.REDIS_CONNECT_TIMEOUT, 10) : 10000,
+    commandTimeout: process.env.REDIS_COMMAND_TIMEOUT ? parseInt(process.env.REDIS_COMMAND_TIMEOUT, 10) : 5000,
+  },
+  
+  // Auth
+  auth: {
+    jwtSecret: process.env.JWT_SECRET || 'insecure-jwt-secret',
+    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1d',
+    serviceKey: process.env.SERVICE_KEY || 'insecure-service-key',
+    serviceId: process.env.SERVICE_ID || 'athena-core',
+  },
+  
+  // OpenTelemetry
+  otel: {
+    enabled: process.env.OTEL_ENABLED === 'true',
+    serviceName: process.env.OTEL_SERVICE_NAME || 'athena-core',
+    endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318/v1/traces',
+    logLevel: (process.env.OTEL_LOG_LEVEL as OTELConfig['logLevel']) || 'info',
+  },
+  
+  // Package info
+  pkg: {
+    name: pkg.name,
+    version: pkg.version,
+    description: pkg.description,
+  },
 };
 
-// Apply defaults
-Object.keys(defaultConfig).forEach((key) => {
-  if (config[key as keyof Config] === undefined) {
-    // @ts-ignore
-    config[key] = defaultConfig[key as keyof typeof defaultConfig];
-  }
-});
-
-export default config;
+export { config };
