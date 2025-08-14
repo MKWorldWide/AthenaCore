@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: athenacore
+    env: node
+    plan: free
+    buildCommand: npm ci || npm install
+    startCommand: npm run start:server || node dist/server.js || npm run dev
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: LOG_LEVEL
+        value: info
+      - key: POSTGRES_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
