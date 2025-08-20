@@ -1,0 +1,10 @@
+{
+  "name": "AthenaCore",
+  "description": "MKWW core backend services — MCP-aware repo manifest",
+  "capabilities": ["filesystem", "git", "http"],
+  "providers": {
+    "filesystem": { "root": "/", "readOnly": true },
+    "git": { "allowed": ["status", "show", "log"] },
+    "http": { "methods": ["GET"], "allow": ["https://raw.githubusercontent.com/*", "https://api.github.com/*"] }
+  }
+}
