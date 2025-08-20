@@ -5,7 +5,7 @@ services:
     name: athenacore-bot
     env: node
     region: oregon # or choose a region closer to your users
-    buildCommand: npm install
+    buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
       - key: DISCORD_TOKEN

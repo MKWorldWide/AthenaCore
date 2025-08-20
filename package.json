@@ -2,8 +2,8 @@
   "name": "athenacore",
   "version": "2.0.0",
   "description": "Sophisticated autonomous operations framework for real-time AI augmentation",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
   "scripts": {
     "build": "tsc",
     "start": "node dist/main.js",
