@@ -42,7 +42,6 @@
     "@fastify/swagger-ui": "^2.0.0",
     "@prisma/client": "^5.0.0",
     "@types/bcryptjs": "^2.4.6",
-    "@types/bullmq": "^4.8.0",
     "@types/node": "^20.0.0",
     "@types/uuid": "^9.0.0",
     "bcryptjs": "^2.4.3",
