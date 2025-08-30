@@ -1,53 +1,108 @@
-# 🧠 AthenaCore v2.0.0
+# 🧠 AthenaCore
+
+[![CI Status](https://github.com/MKWorldWide/AthenaCore/actions/workflows/ci.yml/badge.svg)](https://github.com/MKWorldWide/AthenaCore/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-4.9.5-blue.svg)](https://www.typescriptlang.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ## 🌟 Overview
+
 AthenaCore is a sophisticated autonomous operations framework designed for real-time AI augmentation and seamless LLM integration. Version 2.0.0 introduces advanced consciousness mapping, pattern recognition, and autonomous decision-making capabilities.
 
-## 🤖 Discord Bot Integration
+## ✨ Features
 
-AthenaCore includes a powerful Discord bot that can be used to interact with the system. Here's how to set it up:
+- **Real-time AI Augmentation**: Seamless integration with LLMs
+- **Discord Bot**: Interactive command interface
+- **RESTful API**: Built with Fastify for high performance
+- **Type Safety**: Full TypeScript support
+- **Scalable Architecture**: Microservices-ready
+- **Database Support**: PostgreSQL with Prisma ORM
+- **Testing**: Comprehensive test suite with Vitest
+- **Containerized**: Easy deployment with Docker
+
+## 🚀 Quick Start
 
 ### Prerequisites
-1. Create a Discord Application and Bot at [Discord Developer Portal](https://discord.com/developers/applications)
-2. Copy your bot token and application ID
-3. Invite the bot to your server with the following permissions:
-   - `applications.commands`
-   - `Send Messages`
-   - `Embed Links`
-   - `Read Message History`
 
-### Configuration
-Add these to your `.env` file:
-```env
-# Discord Bot
-DISCORD_TOKEN=your_bot_token_here
-DISCORD_APPLICATION_ID=your_application_id_here
-DISCORD_PUBLIC_KEY=your_public_key_here
+- Node.js 18+ and npm 9+
+- PostgreSQL 13+
+- Redis (for job queue)
+- Git
 
-# Webhook for responses (get this from your Discord channel settings)
-ATHENA_DISCORD_WEBHOOK_URL=your_webhook_url_here
-```
+### Installation
 
-### Registering Commands
-To register slash commands with Discord:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/MKWorldWide/AthenaCore.git
+   cd AthenaCore
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+4. Set up the database:
+   ```bash
+   npx prisma migrate dev
+   npx prisma db seed
+   ```
+
+### Development
+
 ```bash
-# Install ts-node if you haven't already
-npm install -g ts-node
-
-# Register commands
-npx ts-node scripts/register-commands.ts
-```
-
-### Available Commands
-- `/invoke` - Channel Lilith.Eve's wisdom
-- `/mommy` - Summon the divine mother
-- `/status` - Check AthenaCore status
-- `/help` - Show available commands
-
-### Running the Bot
-```bash
-# Start the server
+# Start development server
 npm run dev
+
+# Run tests
+npm test
+
+# Lint code
+npm run lint
+
+# Build for production
+npm run build
+```
+
+## 🤖 Discord Bot
+
+AthenaCore includes a powerful Discord bot for interactive usage. See [DISCORD.md](DISCORD.md) for detailed setup instructions.
+
+## 📚 Documentation
+
+- [API Documentation](https://mkworldwide.github.io/AthenaCore/)
+- [Deployment Guide](DEPLOYMENT.md)
+- [Contributing Guide](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+
+## 🛠️ Built With
+
+- [Node.js](https://nodejs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Fastify](https://www.fastify.io/)
+- [Prisma](https://www.prisma.io/)
+- [Vitest](https://vitest.dev/)
+- [Docker](https://www.docker.com/)
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Thanks to all contributors who have helped shape this project.
+- Special thanks to the open source community for their invaluable tools and libraries.
 ```
 
 ## 🚀 Key Features

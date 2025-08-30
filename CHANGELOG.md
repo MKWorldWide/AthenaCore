@@ -5,6 +5,35 @@ All notable changes to AthenaCore will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### 🚀 Repository Rehabilitation (2025-08-29)
+
+This update focuses on modernizing the repository structure, improving documentation, and enhancing the development workflow.
+
+#### Added
+- Comprehensive `CONTRIBUTING.md` with detailed contribution guidelines
+- `CODE_OF_CONDUCT.md` to ensure a welcoming community
+- `SECURITY.md` with security policies and reporting guidelines
+- GitHub Issue templates for bugs and feature requests
+- Pull Request template for standardized PRs
+- GitHub Pages workflow for documentation
+- Modernized CI/CD pipeline with improved testing and caching
+- Enhanced `.gitignore` with better patterns
+- Repository diagnosis and migration notes
+
+#### Changed
+- Restructured `README.md` with better organization and badges
+- Updated documentation with clearer instructions
+- Improved CI/CD pipeline performance and reliability
+- Standardized code style and formatting
+
+#### Fixed
+- Environment variable handling in CI/CD
+- Documentation inaccuracies
+- Dependency management
+- Security vulnerabilities
+
 ## [2.0.0] - 2024-12-11
 
 ### 🌟 Major Release - Global Deployment Ready
