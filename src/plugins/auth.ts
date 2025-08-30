@@ -1,19 +1,34 @@
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify';
 import { config } from '../config';
 import fp from 'fastify-plugin';
 import { logger } from '../utils/logger';
 import { createHmac } from 'crypto';
 
+// Extend the Fastify types to include our custom properties
 declare module 'fastify' {
   interface FastifyRequest {
     userId?: string;
     serviceId?: string;
     isService?: boolean;
   }
+
+  // Extend the JWT type to include our user properties
+  interface FastifyJWT {
+    user: {
+      id: string;
+      email: string;
+      roles: string[];
+    };
+  }
+
+  interface FastifyInstance {
+    authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    authorize: (roles: string[]) => (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+  }
 }
 
 // Service authentication hook
-const authenticateService = async (request: any, _reply: any) => {
+const authenticateService = async (request: FastifyRequest, _reply: FastifyReply) => {
   const svcId = request.headers['x-svc-id'] as string;
   const signature = request.headers['x-svc-sign'] as string;
 
@@ -21,11 +36,11 @@ const authenticateService = async (request: any, _reply: any) => {
     return; // No service authentication attempted
   }
 
-  // In a real app, you would validate the service ID and signature against a database
+  // Validate service ID and signature
   const isValidSignature = (id: string, sig: string) => {
-    if (id !== config.SVC_ID) return false;
-    const expectedSig = createHmac('sha256', config.SVC_SECRET)
-      .update(request.raw.body || '')
+    if (id !== config.auth.serviceId) return false;
+    const expectedSig = createHmac('sha256', config.auth.serviceSecret)
+      .update(JSON.stringify((request as any).body) || '')
       .digest('hex');
     return sig === expectedSig;
   };
@@ -39,22 +54,27 @@ const authenticateService = async (request: any, _reply: any) => {
 };
 
 // JWT authentication hook
-const authenticateJWT = async (request: any, _reply: any) => {
+const authenticateJWT = async (request: FastifyRequest, _reply: FastifyReply) => {
+  // Skip authentication for public routes
+  if (request.routerPath === '/healthz' || request.routerPath === '/v1/status') {
+    return;
+  }
+
+  // Check for service authentication first
+  if (request.headers['x-svc-id']) {
+    await authenticateService(request, _reply);
+    return;
+  }
+
   try {
-    // Skip authentication for public routes
-    if (request.routerPath === '/healthz' || request.routerPath === '/v1/status') {
-      return;
+    // Verify JWT token and get the payload
+    const payload = await request.jwtVerify<{ user: { id: string; email: string; roles: string[] } }>();
+    
+    // Set user ID from the verified JWT payload
+    if (payload?.user?.id) {
+      request.userId = payload.user.id;
+      // The user property is automatically typed through FastifyJWT
     }
-
-    // Check for service authentication first
-    if (request.headers['x-svc-id']) {
-      await request.jwtVerify();
-      return;
-    }
-
-    // Then check for JWT authentication
-    await request.jwtVerify();
-    request.userId = request.user.id;
   } catch (err) {
     logger.warn({ error: err }, 'Authentication failed');
     throw err;
@@ -63,27 +83,52 @@ const authenticateJWT = async (request: any, _reply: any) => {
 
 // Authorization hook
 const authorize = (roles: string[]) => {
-  return async (request: any, _reply: any) => {
+  return async (request: FastifyRequest, _reply: FastifyReply) => {
     if (request.isService) return; // Service accounts bypass role checks
 
-    if (!request.user) {
-      throw new Error('Not authenticated');
-    }
+    try {
+      // Verify JWT and get the user roles
+      const payload = await request.jwtVerify<{ user: { roles: string[] } }>();
+      
+      if (!payload?.user) {
+        throw new Error('Not authenticated');
+      }
 
-    const userRoles = request.user.roles || [];
-    const hasRole = roles.some(role => userRoles.includes(role));
+      const userRoles = payload.user.roles || [];
+      const hasRole = roles.length === 0 || roles.some(role => userRoles.includes(role));
 
-    if (!hasRole) {
-      throw new Error('Insufficient permissions');
+      if (!hasRole) {
+        throw new Error('Insufficient permissions');
+      }
+    } catch (error) {
+      // Re-throw with a more specific error if needed
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Authentication failed');
     }
   };
 };
 
 const authPlugin: FastifyPluginAsync = async (fastify) => {
-  // Add auth decorators
-  fastify.decorate('authenticate', authenticateJWT);
-  fastify.decorate('authorize', authorize);
-  fastify.decorate('authenticateService', authenticateService);
+  // Add authenticate and authorize methods to fastify instance
+  fastify.decorate('authenticate', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      await authenticateJWT(request, reply);
+    } catch (err) {
+      reply.status(401).send({ error: 'Unauthorized' });
+    }
+  });
+
+  fastify.decorate('authorize', (roles: string[]) => 
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        await authorize(roles)(request, reply);
+      } catch (err) {
+        reply.status(403).send({ error: 'Forbidden' });
+      }
+    }
+  );
 
   // Add preHandler hooks
   fastify.addHook('preHandler', async (request, reply) => {

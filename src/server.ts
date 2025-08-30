@@ -1,26 +1,57 @@
 import Fastify, { FastifyInstance, FastifyServerOptions } from 'fastify';
-import { join } from 'path';
+import pino from 'pino';
 import { config } from './config';
-import { logger } from './utils/logger';
 import { registerPlugins } from './plugins';
 import { registerRoutes } from './routes';
 import { prisma } from './db/prisma';
 import { redis } from './db/redis';
 import { Queue } from 'bullmq';
 
+// Extend Fastify types
+declare module 'fastify' {
+  interface FastifyInstance {
+    queues: Map<string, Queue>;
+  }
+  
+  interface FastifyBaseLogger extends pino.BaseLogger {
+    msgPrefix?: string;
+  }
+}
+
 export async function createServer(opts: FastifyServerOptions = {}): Promise<FastifyInstance> {
+  // Create Fastify with HTTP/1.1 server
   const app = Fastify({
     ...opts,
-    logger,
-    disableRequestLogging: config.NODE_ENV === 'test',
+    logger: {
+      level: process.env.LOG_LEVEL || 'info',
+      transport: process.env.LOG_PRETTY === 'true' ? {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          translateTime: 'SYS:yyyy-mm-dd HH:MM:ss.l',
+          ignore: 'pid,hostname',
+        },
+      } : undefined,
+      formatters: {
+        level: (label: string) => ({ level: label }),
+      },
+      timestamp: () => `,"time":"${new Date().toISOString()}"`,
+      base: {
+        env: process.env.NODE_ENV || 'development',
+        service: process.env.OTEL_SERVICE_NAME || 'athena-core',
+      },
+      msgPrefix: ''
+    } as const,
+    disableRequestLogging: config.nodeEnv === 'test',
     trustProxy: true,
   });
 
   // Register plugins
-  await registerPlugins(app);
+  // Register plugins with empty options
+  await registerPlugins(app, {});
 
-  // Register routes
-  await registerRoutes(app);
+  // Register routes with empty options
+  await registerRoutes(app, {});
 
   // Health check endpoint
   app.get('/healthz', async () => {
@@ -38,13 +69,16 @@ export async function createServer(opts: FastifyServerOptions = {}): Promise<Fas
     status: 'ok',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
-    env: config.NODE_ENV,
+    env: config.nodeEnv,
     memory: process.memoryUsage(),
   }));
 
+  // Initialize queues map
+  app.decorate('queues', new Map<string, Queue>());
+
   // Graceful shutdown
   const shutdown = async () => {
-    logger.info('Starting graceful shutdown...');
+    app.log.info('Starting graceful shutdown...');
     
     // Close Fastify server
     await app.close();
@@ -54,10 +88,10 @@ export async function createServer(opts: FastifyServerOptions = {}): Promise<Fas
     await redis.quit();
     
     // Close all queues
-    const queues = app.queues || [];
-    await Promise.all(queues.map((queue: Queue) => queue.close()));
+    const queues = app.queues ? Array.from(app.queues.values()) : [];
+    await Promise.all(queues.map(queue => queue.close()));
     
-    logger.info('Graceful shutdown complete');
+    app.log.info('Graceful shutdown complete');
     process.exit(0);
   };
 
@@ -78,19 +112,19 @@ if (require.main === module) {
       
       // Start listening
       const address = await app.listen({
-        port: config.PORT,
-        host: config.HOST,
+        port: config.server.port,
+        host: config.server.host,
       });
       
-      logger.info(`Server listening at ${address}`);
+      app.log.info(`Server listening at ${address}`);
       
       // Register service with service registry if needed
-      if (config.NODE_ENV === 'production') {
+      if (config.nodeEnv === 'production') {
         // TODO: Implement service registration
-        logger.info('Service registration would happen here in production');
+        app.log.info('Service registration would happen here in production');
       }
     } catch (err) {
-      logger.error(err, 'Failed to start server');
+      console.error('Failed to start server:', err);
       process.exit(1);
     }
   })();

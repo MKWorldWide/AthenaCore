@@ -1,47 +1,46 @@
 import pino from 'pino';
-import { config } from '../config';
 
-// Create a logger instance
-const logger = pino({
-  level: config.LOG_LEVEL,
-  transport: config.LOG_PRETTY
-    ? {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-          translateTime: 'SYS:yyyy-mm-dd HH:MM:ss.l',
-          ignore: 'pid,hostname',
-        },
-      }
-    : undefined,
+// Create the base logger configuration
+const loggerConfig = {
+  level: process.env.LOG_LEVEL || 'info',
+  transport: process.env.LOG_PRETTY === 'true' ? {
+    target: 'pino-pretty',
+    options: {
+      colorize: true,
+      translateTime: 'SYS:yyyy-mm-dd HH:MM:ss.l',
+      ignore: 'pid,hostname',
+    },
+  } : undefined,
   formatters: {
-    level: (label) => ({ level: label }),
+    level: (label: string) => ({ level: label }),
   },
   timestamp: () => `,"time":"${new Date().toISOString()}"`,
   base: {
-    env: config.NODE_ENV,
-    service: config.OTEL_SERVICE_NAME,
+    env: process.env.NODE_ENV || 'development',
+    service: process.env.OTEL_SERVICE_NAME || 'athena-core',
   },
-});
+};
 
-// Add request ID to logs in a Fastify-compatible way
-export const requestLogger = logger.child({ name: 'request' });
+// Create the main logger instance
+const mainLogger = pino(loggerConfig);
 
-// General application logger
-export const appLogger = logger.child({ name: 'app' });
+// Create child loggers with proper typing
+const appLogger = mainLogger.child({ name: 'app' });
+const requestLogger = mainLogger.child({ name: 'request' });
+const dbLogger = mainLogger.child({ name: 'db' });
+const queueLogger = mainLogger.child({ name: 'queue' });
+const webhookLogger = mainLogger.child({ name: 'webhook' });
+const authLogger = mainLogger.child({ name: 'auth' });
 
-// Database logger
-export const dbLogger = logger.child({ name: 'db' });
+// Export all loggers
+export {
+  appLogger as logger,
+  requestLogger,
+  dbLogger,
+  queueLogger,
+  webhookLogger,
+  authLogger,
+};
 
-// Job queue logger
-export const queueLogger = logger.child({ name: 'queue' });
-
-// Webhook logger
-export const webhookLogger = logger.child({ name: 'webhook' });
-
-// Authentication logger
-export const authLogger = logger.child({ name: 'auth' });
-
-// Default export for backward compatibility
-export const logger = appLogger;
-export default logger;
+// Default export is the main app logger
+export default appLogger;

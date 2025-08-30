@@ -4,11 +4,11 @@ import fp from 'fastify-plugin';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
-import fastifyJwt from '@fastify/jwt';
 import { swagger } from './swagger';
 import { errorHandler } from './error-handler';
 import { authPlugin } from './auth';
 import { queuePlugin } from './queue';
+import jwtPlugin from './jwt';
 
 // Register all plugins
 export const registerPlugins: FastifyPluginAsync = async (fastify) => {
@@ -28,7 +28,7 @@ export const registerPlugins: FastifyPluginAsync = async (fastify) => {
 
   // CORS
   await fastify.register(cors, {
-    origin: config.CORS_ORIGIN === '*' ? true : config.CORS_ORIGIN.split(','),
+    origin: config.server.corsOrigins.length === 0 ? true : config.server.corsOrigins,
     credentials: true,
     methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
@@ -42,8 +42,8 @@ export const registerPlugins: FastifyPluginAsync = async (fastify) => {
 
   // Rate limiting
   await fastify.register(rateLimit, {
-    max: config.RATE_LIMIT_MAX,
-    timeWindow: config.RATE_LIMIT_TIME_WINDOW * 1000, // Convert to ms
+    max: config.server.rateLimit.max,
+    timeWindow: config.server.rateLimit.windowMs,
     addHeaders: {
       'x-ratelimit-limit': true,
       'x-ratelimit-remaining': true,
@@ -53,18 +53,10 @@ export const registerPlugins: FastifyPluginAsync = async (fastify) => {
   });
 
   // JWT Authentication
-  await fastify.register(fastifyJwt, {
-    secret: config.JWT_SECRET,
-    sign: {
-      expiresIn: config.JWT_EXPIRES_IN,
-    },
-    verify: {
-      maxAge: config.JWT_EXPIRES_IN,
-    },
-  });
+  await fastify.register(jwtPlugin);
 
   // Swagger/OpenAPI documentation
-  if (config.ENABLE_OPENAPI) {
+  if (config.server.nodeEnv !== 'production') {
     await fastify.register(swagger);
   }
 

@@ -36,6 +36,9 @@ export interface AuthConfig {
   jwtExpiresIn: string;
   serviceKey: string;
   serviceId: string;
+  serviceSecret: string;
+  serviceTokenExpiresIn: string;
+  apiKeys: string[];
 }
 
 export interface ServerConfig {
@@ -84,32 +87,34 @@ export interface Config {
 }
 
 // Parse environment variables with defaults
+const nodeEnv = (process.env.NODE_ENV as Config['nodeEnv']) || 'development';
+
 const config: Config = {
   // Core
-  nodeEnv: (process.env.NODE_ENV as Config['nodeEnv']) || 'development',
-  isDev: process.env.NODE_ENV !== 'production',
-  isProd: process.env.NODE_ENV === 'production',
-  isTest: process.env.NODE_ENV === 'test',
+  nodeEnv,
+  isDev: nodeEnv === 'development',
+  isProd: nodeEnv === 'production',
+  isTest: nodeEnv === 'test',
   
   // Server
   server: {
-    nodeEnv: (process.env.NODE_ENV as Config['nodeEnv']) || 'development',
+    nodeEnv,
     port: process.env.PORT ? parseInt(process.env.PORT, 10) : 4001,
     host: process.env.HOST || '0.0.0.0',
     baseUrl: process.env.BASE_URL || 'http://localhost:4001',
-    corsOrigins: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [],
+    corsOrigins: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(s => s.trim()) : [],
     requestTimeout: process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT, 10) : 30000,
     rateLimit: {
       windowMs: process.env.RATE_LIMIT_WINDOW_MS ? parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) : 15 * 60 * 1000, // 15 minutes
-      max: process.env.RATE_LIMIT_MAX ? parseInt(process.env.RATE_LIMIT_MAX, 10) : 100,
+      max: process.env.RATE_LIMIT_MAX ? parseInt(process.env.RATE_LIMIT_MAX, 10) : 100, // limit each IP to 100 requests per windowMs
     },
-    buildHash: process.env.BUILD_HASH || 'dev',
-    version: pkg.version,
+    buildHash: process.env.BUILD_HASH || 'local',
+    version: pkg.version || '0.0.0',
   },
   
   // Database
   db: {
-    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/athena',
+    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/athenacore',
     maxConnections: process.env.DB_MAX_CONNECTIONS ? parseInt(process.env.DB_MAX_CONNECTIONS, 10) : 10,
     ssl: process.env.DB_SSL === 'true',
   },
@@ -117,7 +122,7 @@ const config: Config = {
   // Redis
   redis: {
     url: process.env.REDIS_URL || 'redis://localhost:6379',
-    ttl: process.env.REDIS_TTL ? parseInt(process.env.REDIS_TTL, 10) : 86400, // 1 day
+    ttl: process.env.REDIS_TTL ? parseInt(process.env.REDIS_TTL, 10) : 86400, // 24 hours
     maxRetries: process.env.REDIS_MAX_RETRIES ? parseInt(process.env.REDIS_MAX_RETRIES, 10) : 3,
     connectTimeout: process.env.REDIS_CONNECT_TIMEOUT ? parseInt(process.env.REDIS_CONNECT_TIMEOUT, 10) : 10000,
     commandTimeout: process.env.REDIS_COMMAND_TIMEOUT ? parseInt(process.env.REDIS_COMMAND_TIMEOUT, 10) : 5000,
@@ -125,16 +130,19 @@ const config: Config = {
   
   // Auth
   auth: {
-    jwtSecret: process.env.JWT_SECRET || 'insecure-jwt-secret',
-    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1d',
-    serviceKey: process.env.SERVICE_KEY || 'insecure-service-key',
-    serviceId: process.env.SERVICE_ID || 'athena-core',
+    jwtSecret: process.env.JWT_SECRET || 'your-secret-key',
+    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    serviceKey: process.env.SERVICE_KEY || 'service-key',
+    serviceId: process.env.SERVICE_ID || 'service-id',
+    serviceSecret: process.env.SERVICE_SECRET || 'your-service-secret',
+    serviceTokenExpiresIn: process.env.SERVICE_TOKEN_EXPIRES_IN || '1h',
+    apiKeys: process.env.API_KEYS ? process.env.API_KEYS.split(',').map(s => s.trim()) : [],
   },
   
   // OpenTelemetry
   otel: {
     enabled: process.env.OTEL_ENABLED === 'true',
-    serviceName: process.env.OTEL_SERVICE_NAME || 'athena-core',
+    serviceName: process.env.OTEL_SERVICE_NAME || pkg.name || 'athena-core',
     endpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318/v1/traces',
     logLevel: (process.env.OTEL_LOG_LEVEL as OTELConfig['logLevel']) || 'info',
   },
