@@ -46,7 +46,7 @@
     "bcryptjs": "^3.0.2",
     "bullmq": "^5.3.0",
     "dotenv": "^17.2.1",
-    "dotenv-flow": "^3.2.0",
+    "dotenv-flow": "^4.1.0",
     "fast-jwt": "^5.0.6",
     "fastify": "^4.26.1",
     "fastify-plugin": "^5.0.1",
